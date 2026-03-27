@@ -1,0 +1,17 @@
+{
+  "name": "オルコア検査キット在庫管理",
+  "short_name": "オルコア在庫",
+  "description": "歯科医院向けオルコア検査キットの在庫管理システム",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#1f2937",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
