@@ -10,7 +10,8 @@ interface StockManagementModalProps {
   onClose: () => void;
   onSuccess: () => void;
   kitType: KitType;
-  currentStock: number;
+  /** ダッシュボードと同じ基準（30日予約＋バッファ）で発注推奨か */
+  shouldOrderFromDashboard: boolean;
 }
 
 export function StockManagementModal({
@@ -18,6 +19,7 @@ export function StockManagementModal({
   onClose,
   onSuccess,
   kitType,
+  shouldOrderFromDashboard,
 }: StockManagementModalProps) {
   const [lots, setLots] = useState<Lot[]>([]);
   const [editingLotId, setEditingLotId] = useState<string | null>(null);
@@ -48,8 +50,6 @@ export function StockManagementModal({
   if (!isOpen) return null;
 
   const kitConfig = KIT_CONFIGS.find((k) => k.type === kitType);
-  const totalAvailable = lots.reduce((sum, lot) => sum + calculateAvailableStock(lot), 0);
-  const needsReorder = totalAvailable <= 10;
 
   const handleEdit = (lot: Lot) => {
     setEditingLotId(lot.id);
@@ -141,7 +141,7 @@ export function StockManagementModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {needsReorder && (
+          {shouldOrderFromDashboard && (
             <div className="mb-6 bg-orange-50 border-2 border-orange-300 rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
@@ -269,7 +269,7 @@ export function StockManagementModal({
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                         <div className="bg-gray-50 px-3 py-2 rounded-lg">
                           <div className="text-xs text-gray-600 mb-1">総数量</div>
                           <div className="flex items-center justify-between">
@@ -300,6 +300,10 @@ export function StockManagementModal({
                           <div className="text-xs text-yellow-600 mb-1">取り置き中</div>
                           <div className="font-bold text-yellow-700">{lot.reserved}個</div>
                         </div>
+                        <div className="bg-slate-50 px-3 py-2 rounded-lg">
+                          <div className="text-xs text-slate-600 mb-1">使用済み</div>
+                          <div className="font-bold text-slate-700">{lot.used}個</div>
+                        </div>
                         <div className={`px-3 py-2 rounded-lg ${
                           isExpired ? 'bg-red-100' : 'bg-purple-50'
                         }`}>
@@ -311,6 +315,11 @@ export function StockManagementModal({
                           </div>
                         </div>
                       </div>
+                    )}
+                    {!isEditing && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        総数量 = 使用可能 + 取り置き中 + 使用済み（{lot.quantity} = {available} + {lot.reserved} + {lot.used}）
+                      </p>
                     )}
                   </div>
                 );

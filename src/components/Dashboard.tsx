@@ -189,7 +189,16 @@ export function Dashboard() {
         onClose={handleCloseStockManagementModal}
         onSuccess={loadData}
         kitType={selectedKitForManagement?.type || 'pg1000'}
-        currentStock={selectedKitForManagement?.stock || 0}
+        shouldOrderFromDashboard={
+          selectedKitForManagement
+            ? calculateStockInfo(
+                lots,
+                reservations,
+                selectedKitForManagement.type,
+                KIT_CONFIGS.find((c) => c.type === selectedKitForManagement.type)!.buffer
+              ).shouldOrder
+            : false
+        }
       />
 
       <PurchaseOrderModal

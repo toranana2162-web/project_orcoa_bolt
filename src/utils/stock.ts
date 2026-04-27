@@ -51,7 +51,10 @@ export function calculateStockInfo(
   const kitLots = lots.filter(l => l.kit_type === kitType && !isExpired(l.expiry_date));
 
   const available = kitLots.reduce((sum, lot) => sum + calculateAvailableStock(lot), 0);
-  const reserved = kitLots.reduce((sum, lot) => sum + lot.reserved, 0);
+  // 予約テーブル件数を表示の正とする（lot.reserved と不整合が起きやすいため）
+  const reserved = reservations.filter(
+    (r) => r.kit_type === kitType && r.status === 'reserved'
+  ).length;
   const expiringSoon = kitLots
     .filter(lot => isExpiringSoon(lot.expiry_date))
     .reduce((sum, lot) => sum + calculateAvailableStock(lot), 0);

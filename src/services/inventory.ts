@@ -89,7 +89,7 @@ export async function markReservationAsUsed(reservationId: string): Promise<void
     .maybeSingle();
 
   if (fetchError) throw fetchError;
-  if (!reservation || !reservation.lot_id) return;
+  if (!reservation) throw new Error('予約が見つかりません');
 
   const { error: reservationError } = await supabase
     .from('reservations')
@@ -97,6 +97,9 @@ export async function markReservationAsUsed(reservationId: string): Promise<void
     .eq('id', reservationId);
 
   if (reservationError) throw reservationError;
+
+  // 在庫が足りず lot_id が付いていない予約でも、予約は使用済みにできる
+  if (!reservation.lot_id) return;
 
   const { data: lot, error: lotFetchError } = await supabase
     .from('lots')
@@ -109,7 +112,7 @@ export async function markReservationAsUsed(reservationId: string): Promise<void
   const { error: lotError } = await supabase
     .from('lots')
     .update({
-      reserved: lot.reserved - 1,
+      reserved: Math.max(0, lot.reserved - 1),
       used: lot.used + 1,
     })
     .eq('id', reservation.lot_id);
